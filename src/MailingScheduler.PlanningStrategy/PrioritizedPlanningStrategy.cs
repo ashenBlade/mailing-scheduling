@@ -1,11 +1,13 @@
 using MailingScheduler.Core;
+using MailingScheduler.PlanningStrategy.PriorityMessageChecker;
+using MailingScheduler.PlanningStrategy.SendTimeCalculator;
 
 namespace MailingScheduler.PlanningStrategy;
 
 public class PrioritizedPlanningStrategy: IPlanningStrategy
 {
     private readonly IPriorityMessageChecker _priorityChecker;
-    private readonly ISendTimeCalculator _sendTimeCalculator;
+    private readonly IReceiveTimeCalculator _receiveTimeCalculator;
 
     /// <summary>
     /// Максимальное количество приоритетных сообщений
@@ -18,10 +20,10 @@ public class PrioritizedPlanningStrategy: IPlanningStrategy
     public int NonPriorityMax { get; }
 
     public PrioritizedPlanningStrategy(int priorityMax, int nonPriorityMax, 
-                                       IPriorityMessageChecker priorityChecker, ISendTimeCalculator sendTimeCalculator)
+                                       IPriorityMessageChecker priorityChecker, IReceiveTimeCalculator receiveTimeCalculator)
     {
         _priorityChecker = priorityChecker;
-        _sendTimeCalculator = sendTimeCalculator;
+        _receiveTimeCalculator = receiveTimeCalculator;
         PriorityMax = priorityMax;
         NonPriorityMax = nonPriorityMax;
     }
@@ -40,7 +42,7 @@ public class PrioritizedPlanningStrategy: IPlanningStrategy
         var nonPrioritized = new List<MessageSendTime>();
         foreach (var message in messages)
         {
-            var messageSendTime = new MessageSendTime(message, _sendTimeCalculator);
+            var messageSendTime = new MessageSendTime(message, _receiveTimeCalculator);
             if (_priorityChecker.IsPrioritized(message))
             {
                 prioritized.Add(messageSendTime);
@@ -82,10 +84,17 @@ public class PrioritizedPlanningStrategy: IPlanningStrategy
 
     private static List<Message> ToMessageList(List<MessageSendTime> original, int toTake = -1)
     {
-        var result = new List<Message>(original.Count);
-        result.AddRange(toTake == -1
-                            ? original.Select(x => x.Message)
-                            : original.Select(x => x.Message).Take(toTake));
+        List<Message> result;
+        if (toTake == -1)
+        {
+            result = new List<Message>(original.Count);
+            result.AddRange(original.Select(x => x.Message));
+        }
+        else
+        {
+            result = new List<Message>(toTake);
+            result.AddRange(original.Select(x => x.Message).Take(toTake));
+        }
         return result;
     }
 
@@ -93,14 +102,14 @@ public class PrioritizedPlanningStrategy: IPlanningStrategy
     {
         public Message Message { get; set; }
 
-        public DateTime SendTime => _sendTime ??= _sendTimeCalculator.CalculateSendTime(Message);
+        public DateTime SendTime => _sendTime ??= _receiveTimeCalculator.CalculateReceiveTime(Message);
         private DateTime? _sendTime;
-        private readonly ISendTimeCalculator _sendTimeCalculator;
+        private readonly IReceiveTimeCalculator _receiveTimeCalculator;
 
-        public MessageSendTime(Message message, ISendTimeCalculator calculator)
+        public MessageSendTime(Message message, IReceiveTimeCalculator calculator)
         {
             Message = message;
-            _sendTimeCalculator = calculator;
+            _receiveTimeCalculator = calculator;
             _sendTime = null;
         }
     }

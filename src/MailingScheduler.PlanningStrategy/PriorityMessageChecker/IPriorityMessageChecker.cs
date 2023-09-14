@@ -1,6 +1,6 @@
 using MailingScheduler.Core;
 
-namespace MailingScheduler.PlanningStrategy;
+namespace MailingScheduler.PlanningStrategy.PriorityMessageChecker;
 
 public interface IPriorityMessageChecker
 {

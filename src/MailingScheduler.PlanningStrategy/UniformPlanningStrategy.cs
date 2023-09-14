@@ -1,5 +1,4 @@
 using System.Diagnostics;
-using MailingExample.Core;
 using MailingScheduler.Core;
 
 namespace MailingScheduler.PlanningStrategy;
@@ -46,14 +45,5 @@ public class UniformPlanningStrategy: IPlanningStrategy
 
             return startGreater;
         }
-    }
-
-    public const double DefaultTemplateFraction = 0.03;
-    
-    public static UniformPlanningStrategy Create(double templateFraction, int templatesCount, int maxToSend, int maxTemplates)
-    {
-        var adjustedTemplateFraction = Math.Max(templateFraction, 1d / templatesCount);
-        var max = Math.Min()
-        return new UniformPlanningStrategy();
     }
 }
