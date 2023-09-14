@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using MailingScheduler.Core;
+using MailingScheduler.PlanningStrategy.PlanningStrategy;
 using MailingScheduler.PlanningStrategy.PriorityMessageChecker;
 using MailingScheduler.PlanningStrategy.SendTimeCalculator;
 

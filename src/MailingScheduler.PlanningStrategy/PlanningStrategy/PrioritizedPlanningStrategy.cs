@@ -2,7 +2,7 @@ using MailingScheduler.Core;
 using MailingScheduler.PlanningStrategy.PriorityMessageChecker;
 using MailingScheduler.PlanningStrategy.SendTimeCalculator;
 
-namespace MailingScheduler.PlanningStrategy;
+namespace MailingScheduler.PlanningStrategy.PlanningStrategy;
 
 public class PrioritizedPlanningStrategy: IPlanningStrategy
 {

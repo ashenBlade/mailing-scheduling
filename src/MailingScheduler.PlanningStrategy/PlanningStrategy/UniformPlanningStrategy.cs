@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using MailingScheduler.Core;
 
-namespace MailingScheduler.PlanningStrategy;
+namespace MailingScheduler.PlanningStrategy.PlanningStrategy;
 
 public class UniformPlanningStrategy: IPlanningStrategy
 {
