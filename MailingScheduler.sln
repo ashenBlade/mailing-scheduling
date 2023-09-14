@@ -1,0 +1,41 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{CD89E1BE-ED20-4F2E-94B3-3951E0CA79DD}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailingScheduler.PlanningStrategy", "src\MailingScheduler.PlanningStrategy\MailingScheduler.PlanningStrategy.csproj", "{4C7362B1-689B-4A41-B7C0-E8A628E5FF96}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailingScheduler.Core", "src\MailingScheduler.Core\MailingScheduler.Core.csproj", "{555EE097-ED7A-4C1B-815B-1CB9EDB3633D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailingScheduler.Console", "src\MailingScheduler.Console\MailingScheduler.Console.csproj", "{98180849-D097-432E-84F4-BB0AE9A3BA02}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{4C7362B1-689B-4A41-B7C0-E8A628E5FF96} = {CD89E1BE-ED20-4F2E-94B3-3951E0CA79DD}
+		{555EE097-ED7A-4C1B-815B-1CB9EDB3633D} = {CD89E1BE-ED20-4F2E-94B3-3951E0CA79DD}
+		{98180849-D097-432E-84F4-BB0AE9A3BA02} = {CD89E1BE-ED20-4F2E-94B3-3951E0CA79DD}
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4C7362B1-689B-4A41-B7C0-E8A628E5FF96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4C7362B1-689B-4A41-B7C0-E8A628E5FF96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4C7362B1-689B-4A41-B7C0-E8A628E5FF96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4C7362B1-689B-4A41-B7C0-E8A628E5FF96}.Release|Any CPU.Build.0 = Release|Any CPU
+		{555EE097-ED7A-4C1B-815B-1CB9EDB3633D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{555EE097-ED7A-4C1B-815B-1CB9EDB3633D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{555EE097-ED7A-4C1B-815B-1CB9EDB3633D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{555EE097-ED7A-4C1B-815B-1CB9EDB3633D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98180849-D097-432E-84F4-BB0AE9A3BA02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98180849-D097-432E-84F4-BB0AE9A3BA02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98180849-D097-432E-84F4-BB0AE9A3BA02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98180849-D097-432E-84F4-BB0AE9A3BA02}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

@@ -1,4 +1,4 @@
-namespace MailingExample.Core;
+namespace MailingScheduler.Core;
 
 public interface IPlanningStrategy
 {
