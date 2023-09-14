@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailingScheduler.Core", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailingScheduler.Console", "src\MailingScheduler.Console\MailingScheduler.Console.csproj", "{98180849-D097-432E-84F4-BB0AE9A3BA02}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MailingScheduler.Database", "src\MailingScheduler.Database\MailingScheduler.Database.csproj", "{F17ED5A3-8A0D-48AB-BB94-BFD3D8A77A78}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -23,6 +25,7 @@ Global
 		{4C7362B1-689B-4A41-B7C0-E8A628E5FF96} = {CD89E1BE-ED20-4F2E-94B3-3951E0CA79DD}
 		{555EE097-ED7A-4C1B-815B-1CB9EDB3633D} = {CD89E1BE-ED20-4F2E-94B3-3951E0CA79DD}
 		{98180849-D097-432E-84F4-BB0AE9A3BA02} = {CD89E1BE-ED20-4F2E-94B3-3951E0CA79DD}
+		{F17ED5A3-8A0D-48AB-BB94-BFD3D8A77A78} = {CD89E1BE-ED20-4F2E-94B3-3951E0CA79DD}
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{4C7362B1-689B-4A41-B7C0-E8A628E5FF96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -37,5 +40,9 @@ Global
 		{98180849-D097-432E-84F4-BB0AE9A3BA02}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{98180849-D097-432E-84F4-BB0AE9A3BA02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{98180849-D097-432E-84F4-BB0AE9A3BA02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F17ED5A3-8A0D-48AB-BB94-BFD3D8A77A78}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F17ED5A3-8A0D-48AB-BB94-BFD3D8A77A78}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F17ED5A3-8A0D-48AB-BB94-BFD3D8A77A78}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F17ED5A3-8A0D-48AB-BB94-BFD3D8A77A78}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -1,6 +1,6 @@
 namespace MailingScheduler.Core;
 
-public class MailingScheduler
+public class StrategyMailingScheduler
 {
     private readonly Template[] _templates;
     
@@ -9,7 +9,7 @@ public class MailingScheduler
     /// </summary>
     public int MaxToSend { get; }
 
-    public MailingScheduler(Template[] templates, int maxToSend)
+    public StrategyMailingScheduler(Template[] templates, int maxToSend)
     {
         _templates = templates;
         MaxToSend = maxToSend;
