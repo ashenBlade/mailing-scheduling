@@ -44,7 +44,6 @@ public class TemplateFactory
         _morningInterval = new IntervalPriorityMessageChecker(new TimeOnly(0, 0), new TimeOnly(12, 0), calculator);
         _daytimeInterval = new IntervalPriorityMessageChecker(new TimeOnly(12, 0), new TimeOnly(17, 0), calculator);
         _eveningInterval = new IntervalPriorityMessageChecker(new TimeOnly(17, 0), new TimeOnly(23, 59, 59), calculator);
-
     }
 
     public Template CreateTemplate(TemplateInfo info)
@@ -67,6 +66,8 @@ public class TemplateFactory
         var priorityMax = Math.Max(Math.Min(templateMaxMessages, _priorityOriginalMax), 1);
         var nonPriorityMax = Math.Max(Math.Min(templateMaxMessages, _nonPriorityOriginalMax), 1);
 
+        
+        
         var priorityChecker = info.Distribution switch
                               {
                                 TemplateDistribution.Morning => _morningInterval,
@@ -76,7 +77,7 @@ public class TemplateFactory
                                 _                            => throw new InvalidEnumArgumentException(nameof(info.Distribution), (int)info.Distribution, typeof(TemplateDistribution))
                               };
 
-        return new PrioritizedPlanningStrategy(priorityMax, nonPriorityMax, priorityChecker, _calculator);
+        return new PrioritizedPlanningStrategy(priorityMax, nonPriorityMax, info.Distribution, priorityChecker, _calculator);
     }
     
     private UniformPlanningStrategy CreateUniformPlanningStrategy(TemplateInfo info)
@@ -109,37 +110,6 @@ public class TemplateFactory
         var uniformOriginalMax = ( int ) (uniformFraction * maxToSend);
         
         return new TemplateFactory(nonPriorityOriginalMax, priorityOriginalMax, uniformOriginalMax, intervalMinutes, calculator);
-    }
-    
-    /// <summary>
-    /// Сообщение приоритетное, если время его получения попадает в приоритетный интервал
-    /// </summary>
-    private class IntervalPriorityMessageChecker: IPriorityMessageChecker
-    {
-        /// <summary>
-        /// Начало приоритетного интервала
-        /// </summary>
-        private readonly TimeOnly _startTime;
-    
-        /// <summary>
-        /// Конец приоритетного интервала
-        /// </summary>
-        private readonly TimeOnly _endTime;
-        private readonly IReceiveTimeCalculator _receiveTimeCalculator;
-    
-        public IntervalPriorityMessageChecker(TimeOnly startTime, TimeOnly endTime, IReceiveTimeCalculator receiveTimeCalculator)
-        {
-            _startTime = startTime;
-            _endTime = endTime;
-            _receiveTimeCalculator = receiveTimeCalculator;
-        }
-    
-        public bool IsPrioritized(Message message)
-        {
-            // Находится ли время получения сообщения в приоритетном интервале
-            var receiveTime = TimeOnly.FromDateTime(_receiveTimeCalculator.CalculateReceiveTime(message));
-            return _startTime <= receiveTime && receiveTime <= _endTime;
-        }
     }
 }
 

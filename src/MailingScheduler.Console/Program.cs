@@ -8,6 +8,7 @@ using MailingScheduler.Core;
 using MailingScheduler.Database;
 using MailingScheduler.PlanningStrategy;
 using MailingScheduler.PlanningStrategy.SendTimeCalculator;
+using MailingScheduler.Statistics;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Query.SqlExpressions;
 using Microsoft.EntityFrameworkCore.Storage;
@@ -21,34 +22,48 @@ Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .CreateLogger();
 
-var configuration = new ConfigurationBuilder()
-                   .AddEnvironmentVariables()
-                   .Build();
-
-var programOptions = configuration.Get<ProgramOptions>()!;
 try
 {
-    Validator.ValidateObject(programOptions, new ValidationContext(programOptions), true);
+    var configuration = new ConfigurationBuilder()
+                       .AddEnvironmentVariables()
+                       .Build();
+
+    var programOptions = configuration.Get<ProgramOptions>()!;
+    try
+    {
+        Validator.ValidateObject(programOptions, new ValidationContext(programOptions), true);
+    }
+    catch (Exception e)
+    {
+        Log.Fatal(e, "Ошибка во время валидации конфигурации");
+        throw;
+    }
+
+    var (templates, messages) = LoadData(programOptions);
+
+    var maxToSend = programOptions.MaxSendSpeed * programOptions.WorkInterval;
+    var scheduler = new StrategyMailingScheduler(templates, maxToSend);
+
+    Log.Information("Начинаю планирование сообщений");
+    var watch = Stopwatch.StartNew();
+    var scheduled = scheduler.Schedule(messages)
+                             .ToList();
+    watch.Stop();
+    var elapsed = watch.Elapsed;
+    Log.Debug("Время работы: {WorkTime}", elapsed);
+
+    var statistics = new StatisticsCalculator(templates).CalculateStatistics(scheduled);
+    var saver = new HtmlStatisticsSaver("statistics.html");
+    saver.SaveStatistics(statistics);
 }
-catch (Exception e)
+catch (Exception ex)
 {
-    Log.Fatal(e, "Ошибка во время валидации конфигурации");
-    throw;
+    Log.Fatal(ex, "Необработанное исключение во время планирования сообщений");
 }
-
-var (templates, messages) = LoadData(programOptions);
-
-var maxToSend = programOptions.MaxSendSpeed * programOptions.WorkInterval;
-var scheduler = new StrategyMailingScheduler(templates, maxToSend);
-
-Log.Information("Начинаю планирование сообщений");
-var watch = Stopwatch.StartNew();
-var scheduled = scheduler.Schedule(messages)
-                         .ToList();
-watch.Stop();
-var elapsed = watch.Elapsed;
-Log.Information("Время работы: {WorkTime}", elapsed);
-
+finally
+{
+    Log.CloseAndFlush();
+}
 
 ( Template[], Message[] ) LoadData(ProgramOptions options)
 {
@@ -63,11 +78,11 @@ Log.Information("Время работы: {WorkTime}", elapsed);
     MailingScheduler.Database.Template[] databaseTemplates;
     using (var context = new MailingDbContext(dbContextOptions))
     {
-        Log.Information("Загружаю {MaxMessages} сообщений");
+        Log.Information("Загружаю {MaxMessages} сообщений", options.MaxToFetch);
         databaseMessages = context.Messages
                                   .Take(options.MaxToFetch)
                                   .ToArray();
-        Log.Information("Загружено {LoadedCount} сообщений", databaseMessages.Count);
+        Log.Information("Загружено {LoadedCount} сообщений", databaseMessages.Length);
         templateCodes = databaseMessages
                        .Select(x => x.TemplateCode)
                        .ToHashSet();
@@ -85,15 +100,15 @@ Log.Information("Время работы: {WorkTime}", elapsed);
                                                  options.UniformFraction, options.MaxSendSpeed, options.WorkInterval, 
                                                  new LocalTimeReceiveTimeCalculator(DateTime.Now));
 
-    var templates = Array.ConvertAll(databaseTemplates, t =>
+    var t = Array.ConvertAll(databaseTemplates, t =>
     {
         var priority = ( Priority ) (( int ) t.Priority);
         var distribution = ( TemplateDistribution ) (( int ) t.Distribution);
         return templateFactory.CreateTemplate(new TemplateInfo(t.TemplateCode, priority, distribution, t.MaxSendSpeed));
     });
-    var messages = Array.ConvertAll(databaseMessages, m =>
+    var m = Array.ConvertAll(databaseMessages, m =>
     {
         return new Message(m.Id, m.TemplateCode, m.StartTime, m.EndTime, TimeSpan.FromHours(m.ClientTimezoneOffset));
     });
-    return (templates, messages);
+    return (t, m);
 }

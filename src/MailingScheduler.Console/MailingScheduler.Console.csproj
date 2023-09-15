@@ -6,6 +6,7 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
+        <LangVersion>11</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,6 +19,7 @@
       <ProjectReference Include="..\MailingScheduler.Core\MailingScheduler.Core.csproj" />
       <ProjectReference Include="..\MailingScheduler.Database\MailingScheduler.Database.csproj" />
       <ProjectReference Include="..\MailingScheduler.PlanningStrategy\MailingScheduler.PlanningStrategy.csproj" />
+      <ProjectReference Include="..\MailingScheduler.Statistics\MailingScheduler.Statistics.csproj" />
     </ItemGroup>
 
     <ItemGroup>

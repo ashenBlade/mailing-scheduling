@@ -6,7 +6,7 @@ namespace MailingScheduler.PlanningStrategy.PlanningStrategy;
 
 public class PrioritizedPlanningStrategy: IPlanningStrategy
 {
-    private readonly IPriorityMessageChecker _priorityChecker;
+    public IPriorityMessageChecker PriorityChecker { get; }
     private readonly IReceiveTimeCalculator _receiveTimeCalculator;
 
     /// <summary>
@@ -19,13 +19,18 @@ public class PrioritizedPlanningStrategy: IPlanningStrategy
     /// </summary>
     public int NonPriorityMax { get; }
 
-    public PrioritizedPlanningStrategy(int priorityMax, int nonPriorityMax, 
-                                       IPriorityMessageChecker priorityChecker, IReceiveTimeCalculator receiveTimeCalculator)
+    public TemplateDistribution Distribution { get; }
+
+    public PrioritizedPlanningStrategy(int priorityMax, int nonPriorityMax,
+                                       TemplateDistribution distribution,
+                                       IPriorityMessageChecker priorityChecker, 
+                                       IReceiveTimeCalculator receiveTimeCalculator)
     {
-        _priorityChecker = priorityChecker;
+        PriorityChecker = priorityChecker;
         _receiveTimeCalculator = receiveTimeCalculator;
         PriorityMax = priorityMax;
         NonPriorityMax = nonPriorityMax;
+        Distribution = distribution;
     }
     
     public List<Message> Plan(List<Message> messages)
@@ -43,7 +48,7 @@ public class PrioritizedPlanningStrategy: IPlanningStrategy
         foreach (var message in messages)
         {
             var messageSendTime = new MessageSendTime(message, _receiveTimeCalculator);
-            if (_priorityChecker.IsPrioritized(message))
+            if (PriorityChecker.IsPrioritized(message))
             {
                 prioritized.Add(messageSendTime);
             }
