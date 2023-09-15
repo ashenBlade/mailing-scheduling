@@ -18,6 +18,7 @@ using Serilog;
 using Message = MailingScheduler.Core.Message;
 using Template = MailingScheduler.Core.Template;
 
+var totalTimeWatcher = Stopwatch.StartNew();
 Log.Logger = new LoggerConfiguration()
             .WriteTo.Console()
             .CreateLogger();
@@ -45,14 +46,14 @@ try
     var scheduler = new StrategyMailingScheduler(templates, maxToSend);
 
     Log.Information("Начинаю планирование сообщений");
-    var watch = Stopwatch.StartNew();
+    var scheduleWatch = Stopwatch.StartNew();
     var scheduled = scheduler.Schedule(messages)
                              .ToList();
-    watch.Stop();
-    var elapsed = watch.Elapsed;
+    scheduleWatch.Stop();
+    var elapsed = scheduleWatch.Elapsed;
     Log.Debug("Время работы: {WorkTime}", elapsed);
-
-    var statistics = new StatisticsCalculator(templates).CalculateStatistics(scheduled);
+    totalTimeWatcher.Stop();
+    var statistics = new StatisticsCalculator(templates).CalculateStatistics(scheduled, totalTimeWatcher.Elapsed, scheduleWatch.Elapsed);
     var saver = new HtmlStatisticsSaver("statistics.html");
     saver.SaveStatistics(statistics);
 }

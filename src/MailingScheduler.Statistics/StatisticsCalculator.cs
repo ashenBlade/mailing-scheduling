@@ -10,7 +10,7 @@ public class StatisticsCalculator
         _codeTemplate = templates.ToDictionary(x => x.TemplateCode);
     }
     
-    public ScheduleStatistics CalculateStatistics(List<Message> scheduledMessages)
+    public ScheduleStatistics CalculateStatistics(List<Message> scheduledMessages, TimeSpan totalWorkTime, TimeSpan scheduleTime)
     {
         // 1. Кол-во разных шаблонов
         // 2. Статистика для каждого шаблона по отдельности
@@ -24,7 +24,7 @@ public class StatisticsCalculator
         return new(
             scheduledMessages.Count, 
             CalculatePerPriorityMessagesCount(templateGroups),
-            templateGroups);
+            templateGroups, totalWorkTime, scheduleTime);
     }
 
     private static Dictionary<Priority, int> CalculatePerPriorityMessagesCount(TemplateGroup[] groups)
