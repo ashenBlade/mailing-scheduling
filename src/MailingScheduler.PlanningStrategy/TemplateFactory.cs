@@ -86,6 +86,18 @@ public class TemplateFactory
         return new UniformPlanningStrategy(messagesMax);
     }
 
+    public Template[] MapToTemplates(TemplateInfo[] templateInfos)
+    {
+        var result = new Template[templateInfos.Length];
+
+        for (var i = 0; i < result.Length; i++)
+        {
+            result[i] = CreateTemplate(templateInfos[i]);
+        }
+        
+        return result;
+    }
+
     public static TemplateFactory Create(int differentTemplatesCount, 
                                          double priorityFraction, 
                                          double nonPriorityFraction, double uniformFraction,

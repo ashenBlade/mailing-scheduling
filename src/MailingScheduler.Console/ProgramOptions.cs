@@ -11,4 +11,6 @@ public class ProgramOptions
     public double PriorityFraction { get; set; }
     public double NonPriorityFraction { get; set; }
     public DateTime CurrentTime { get; set; }
+    
+    
 }

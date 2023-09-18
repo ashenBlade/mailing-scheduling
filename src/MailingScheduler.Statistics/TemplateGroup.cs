@@ -15,7 +15,7 @@ public class TemplateGroup
     public Template Template { get; set; }
     public Message[] Messages { get; set; }
 
-    public TemplateGroupSummary GetSummary()
+    public TemplateGroupSummary CalculateSummary()
     {
         int? priorityCount = null;
         TemplateDistribution distribution = TemplateDistribution.Uniform;

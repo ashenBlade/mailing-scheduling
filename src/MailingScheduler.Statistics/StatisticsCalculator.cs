@@ -4,51 +4,57 @@ namespace MailingScheduler.Statistics;
 
 public class StatisticsCalculator
 {
+    private readonly Message[] _sourceMessages;
     private readonly Dictionary<string, Template> _codeTemplate;
-    public StatisticsCalculator(Template[] templates)
+    public StatisticsCalculator(Template[] templates, Message[] sourceMessages)
     {
+        _sourceMessages = sourceMessages;
         _codeTemplate = templates.ToDictionary(x => x.TemplateCode);
     }
     
     public ScheduleStatistics CalculateStatistics(List<Message> scheduledMessages, TimeSpan totalWorkTime, TimeSpan scheduleTime)
     {
-        // 1. Кол-во разных шаблонов
-        // 2. Статистика для каждого шаблона по отдельности
-        // 3. Кол-во различных приоритетов
-
-        var templateGroups = scheduledMessages
-                            .GroupBy(m => m.TemplateCode)
-                            .Select(g => new TemplateGroup(_codeTemplate[g.Key], g.ToArray()))
-                            .ToArray();
+        var scheduledTemplateGroups = CalculateTemplateGroups(scheduledMessages);
+        var totalTemplateGroups = CalculateTemplateGroups(_sourceMessages);
+        var countByPriority = CalculatePerPriorityMessagesCount(scheduledTemplateGroups);
         
-        return new(
+        return new ScheduleStatistics(
+            _sourceMessages.Length,
             scheduledMessages.Count, 
-            CalculatePerPriorityMessagesCount(templateGroups),
-            templateGroups, totalWorkTime, scheduleTime);
+            countByPriority,
+            scheduledTemplateGroups, totalTemplateGroups,  
+            totalWorkTime, scheduleTime);
     }
+    
+    private TemplateGroup[] CalculateTemplateGroups(IEnumerable<Message> messages) => 
+        messages
+           .GroupBy(m => m.TemplateCode)
+           .Select(g => new TemplateGroup(_codeTemplate[g.Key], g.ToArray()))
+           .ToArray();
 
     private static Dictionary<Priority, int> CalculatePerPriorityMessagesCount(TemplateGroup[] groups)
     {
         var (rt, h, n, l) = (0, 0, 0, 0);
         foreach (var group in groups)
         {
+            var count = group.Messages.Length;
             switch (group.Template.Priority)
             {
                 case Priority.Realtime:
-                    rt++;
+                    rt += count;
                     break;
                 case Priority.Normal:
-                    n++;
+                    n += count;
                     break;
                 case Priority.High:
-                    h++;
+                    h += count;
                     break;
                 case Priority.Low:
-                    l++;
+                    l += count;
                     break;
             }
         }
-
+        
         return new()
         {
             {Priority.Realtime, rt},

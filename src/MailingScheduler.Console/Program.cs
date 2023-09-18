@@ -22,7 +22,7 @@ try
 {
     var programOptions = new ProgramOptions()
     {
-        WorkIntervalMinutes = 2,
+        WorkIntervalMinutes = 5,
         MaxSendSpeed = 10000,
         UniformFraction = 0.03,
         PriorityFraction = 0.05,
@@ -40,22 +40,27 @@ try
         throw;
     }
 
-    var (templates, messages) = LoadData(programOptions);
+    var (templates, messages) = GenerateData(programOptions);
 
     var maxToSend = programOptions.MaxSendSpeed * programOptions.WorkIntervalMinutes;
+    Log.Debug("Максимальное число сообщений к отправке: {MaxCount}", maxToSend);
     var scheduler = new StrategyMailingScheduler(templates, maxToSend);
 
-    Log.Information("Начинаю планирование сообщений");
+    Log.Information("Начинаю планирование");
     var scheduleWatch = Stopwatch.StartNew();
     var scheduled = scheduler.Schedule(messages)
                              .ToList();
     scheduleWatch.Stop();
     var elapsed = scheduleWatch.Elapsed;
+    
     Log.Debug("Время работы: {WorkTime}", elapsed);
     totalTimeWatcher.Stop();
-    var statistics = new StatisticsCalculator(templates).CalculateStatistics(scheduled, totalTimeWatcher.Elapsed, scheduleWatch.Elapsed);
     
+    Log.Information("Рассчитываю статистику");
+    var statistics = new StatisticsCalculator(templates, messages)
+       .CalculateStatistics(scheduled, totalTimeWatcher.Elapsed, scheduleWatch.Elapsed);
     var saver = new HtmlStatisticsSaver("statistics.html");
+    Log.Information("Сохраняю статистику");
     saver.SaveStatistics(statistics);
 }
 catch (Exception ex)
@@ -67,70 +72,24 @@ finally
     Log.CloseAndFlush();
 }
 
-( Template[], Message[] ) LoadData(ProgramOptions options)
+return;
+
+static ( Template[], Message[] ) GenerateData(ProgramOptions options)
 {
-    var templateGenerateInfos = new TemplateGenerateInfo[]
-    {
-        new(new("Sample", Priority.High, TemplateDistribution.Daytime, 1000), 2345, 200 ),
-        new( new("Another", Priority.Normal, TemplateDistribution.Evening, 1000), 15442, 2132 ),
-        new( new("Hello", Priority.Normal, TemplateDistribution.Uniform, 1000), 1256, null ),
-        new( new("World", Priority.Low, TemplateDistribution.Uniform, 1000), 9888, null ),
-        new( new("aaaaa", Priority.Normal, TemplateDistribution.Morning, 1500), 10023, 4000 ),
-    };
+    var templateInfos = TemplateInfoGenerator
+       .GenerateRandomTemplateInfos(100);
+    
     var messages = MessagesGenerator
-                  .GenerateMessages(options.CurrentTime, templateGenerateInfos)
+                  .GenerateMessages(options.CurrentTime, templateInfos)
                   .ToArray();
     
-    var templateFactory = TemplateFactory.Create(templateGenerateInfos.Length,
+    var templateFactory = TemplateFactory.Create(
+        templateInfos.Length,
         options.PriorityFraction, options.NonPriorityFraction,
         options.UniformFraction, options.MaxSendSpeed, options.WorkIntervalMinutes, 
         new LocalTimeReceiveTimeCalculator(options.CurrentTime));
-    var templates = templateGenerateInfos.Select(x => templateFactory.CreateTemplate(x.TemplateInfo))
-                                         .ToArray();
-    return ( templates, messages );
     
-    // Log.Information("Создаю Data Source для БД");
-    // var dbContextOptions = new DbContextOptionsBuilder<MailingDbContext>()
-    //                       .UseNpgsql(options.ConnectionString)
-    //                       .Options;
-    //
-    //
-    // MailingScheduler.Database.Message[] databaseMessages;
-    // HashSet<string> templateCodes;
-    // MailingScheduler.Database.Template[] databaseTemplates;
-    // using (var context = new MailingDbContext(dbContextOptions))
-    // {
-    //     Log.Information("Загружаю {MaxMessages} сообщений", options.MaxToFetch);
-    //     databaseMessages = context.Messages
-    //                               .Take(options.MaxToFetch)
-    //                               .ToArray();
-    //     Log.Information("Загружено {LoadedCount} сообщений", databaseMessages.Length);
-    //     templateCodes = databaseMessages
-    //                    .Select(x => x.TemplateCode)
-    //                    .ToHashSet();
-    //     
-    //     Log.Information("Загружаю {TemplatesCount} шаблонов", templateCodes.Count);
-    //     databaseTemplates = context.Templates
-    //                                .Where(x => templateCodes.Contains(x.TemplateCode))
-    //                                .ToArray();
-    //     Log.Information("Шаблоны загружены");
-    // }
-    //
-    // Log.Debug("Начинаю конвертировать объекты БД в доменные");
-    // var templateFactory = TemplateFactory.Create(templateCodes.Count,
-    //                                              options.PriorityFraction, options.NonPriorityFraction,
-    //                                              options.UniformFraction, options.MaxSendSpeed, options.WorkInterval, 
-    //                                              new LocalTimeReceiveTimeCalculator(DateTime.Now));
-    //
-    // var t = Array.ConvertAll(databaseTemplates, t =>
-    // {
-    //     var priority = ( Priority ) (( int ) t.Priority);
-    //     var distribution = ( TemplateDistribution ) (( int ) t.Distribution);
-    //     return templateFactory.CreateTemplate(new TemplateInfo(t.TemplateCode, priority, distribution, t.MaxSendSpeed));
-    // });
-    // var m = Array.ConvertAll(databaseMessages, m =>
-    // {
-    //     return new Message(m.Id, m.TemplateCode, m.StartTime, m.EndTime, m.ClientTimezoneOffset);
-    // });
-    // return (t, m);
+    var templates = templateFactory.MapToTemplates(templateInfos);
+    
+    return ( templates, messages );
 }

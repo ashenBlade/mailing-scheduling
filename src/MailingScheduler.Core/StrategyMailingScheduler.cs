@@ -26,9 +26,13 @@ public class StrategyMailingScheduler
             {
                 yield return message;
                 left--;
+                if (left <= 0)
+                {
+                    yield break;
+                } 
             }
 
-            if (left == 0)
+            if (left <= 0)
             {
                 yield break;
             }

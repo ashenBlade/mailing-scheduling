@@ -1,4 +1,5 @@
 using MailingScheduler.Core;
+using MailingScheduler.PlanningStrategy;
 using MailingScheduler.Statistics;
 using Serilog;
 
@@ -37,60 +38,138 @@ public class HtmlStatisticsSaver
         {
             writer.Write("Общее количество сообщений: {0}", statistics.TotalMessagesCount);    
         }
+        
+        writer.Write("<ul><li>Общее: {0}</li><li>Выбрано: {1}</li></ul>", 
+            statistics.TotalMessagesCount, statistics.ScheduledMessagesCount);
+
+        using (var _ = writer.BeginParagraph())
+        {
+            writer.Write("Количество отобранных сообщений: {0}", statistics.ScheduledMessagesCount);
+        }
+
+        using (var _ = writer.BeginParagraph())
+        {
+            writer.Write("Время планирования: {0:g}", statistics.ScheduleTime);
+        }
 
         // 2. Кол-во различных шаблонов
         using (var _ = writer.BeginParagraph())
         {
-            writer.Write("Количество различных шаблонов: {0}", statistics.DifferentTemplatesCount);
+            writer.Write("Количество различных шаблонов:\n");
         }
+        
+        writer.Write("<ul><li>Общее: {0}</li><li>Выбрано: {1}</li></ul>", 
+            statistics.TotalTemplateGroups.Length, statistics.ScheduledTemplateGroups.Length);
         
         // 3. Кол-во сообщений по приоритетам
         using (var _ = writer.BeginParagraph())
         {
             writer.Write("Количество взятых сообщений по приоритетам");
-            writer.Write("<table>");
-            writer.Write("<thead><tr><th>Приоритет</th><th>Число сообщений</th></tr></thead>");
-            writer.Write("<tbody>");
-            foreach (var priority in Enum.GetValues<Priority>())
-            {
-                var count = statistics.PriorityMessagesCount[priority];
-                writer.Write("<tr><td>{0}</td><td>{1}</td></tr>", priority.ToString(), count);
-            }
-            writer.Write("</tbody>");
-            writer.Write("</table>");
         }
+
+        writer.Write("<table style=\"border: 1px\">");
+        writer.Write("<thead><tr><th>Приоритет</th><th>Число сообщений</th></tr></thead>");
+        writer.Write("<tbody>");
+        foreach (var priority in Enum.GetValues<Priority>())
+        {
+            var count = statistics.PriorityMessagesCount[priority];
+            writer.Write("<tr><td>{0}</td><td>{1}</td></tr>", priority.ToString(), count);
+        }
+        writer.Write("</tbody>");
+        writer.Write("</table>");
         
-        // 4. Таблица со всем данными
+        
+        // 4. Таблица со всеми сообщениями/шаблонами
         using (var _ = writer.BeginParagraph())
         {
             writer.Write("Общая сводка");
-            writer.Write("<table>");
-            writer.Write("<thead><tr><th>Шаблон</th><th>Приоритет</th><th>Общее число сообщений</th><th>Распределение</th><th>Число приоритетных</th><th>Число неприоритетных</th></tr></thead>");
-            writer.Write("<tbody>");
-            foreach (var group in statistics.TemplateGroups)
-            {
-                var summary = group.GetSummary();
-                string priorityCount = "";
-                string nonPriorityCount = "";
-                if (summary.PriorityMessagesCount is {} priorityMessagesCount)
-                {
-                    priorityCount = priorityMessagesCount.ToString();
-                    nonPriorityCount = ( summary.TotalMessagesCount - priorityMessagesCount ).ToString();
-                }
-                writer.Write("<tr><td>{0}</td><td>{1}</td><td>{2}</td><td>{3}</td><td>{4}</td><td>{5}</td></tr>",
-                    summary.TemplateCode, summary.Priority.ToString(), summary.TotalMessagesCount, summary.Distribution.ToString(), priorityCount, nonPriorityCount);
-            }
-            writer.Write("</tbody>");
-            writer.Write("</table>");
         }
+
+        writer.Write("<table style=\"border: 1px\">");
+        writer.Write("<thead><tr>"
+                   + "<th>Шаблон</th>"
+                   + "<th>Приоритет</th>"
+                   + "<th>Распределение</th>"
+                   + "<th>Сообщений всего (общее/взято)</th>"
+                   + "<th>Приоритетные (общее/взято)</th>"
+                   + "<th>Неприоритетных (общее/взято)</th>"
+                   + "</tr></thead>");
+        writer.Write("<tbody>\n");
+        
+        foreach (var (group, scheduled) in statistics.GetTotalAndScheduledGroups()
+                                                     .OrderBy(x => (int)x.Total.Template.Priority)
+                                                     .ThenByDescending(x => x.Scheduled is null 
+                                                                                ? int.MinValue 
+                                                                                : x.Scheduled.Messages.Length))
+        {
+            var totalSummary = group.CalculateSummary();
+
+            var (totalMessages, totalPriorityMessages, totalNonPriorityMessages) = ExtractData(totalSummary);
+            var (scheduledMessages, scheduledPriority, scheduledNonPriority) =
+                scheduled is not null 
+                    ? ExtractData(scheduled.CalculateSummary()) 
+                    : (0, "", "");
+            
+            writer.Write("<tr>"
+                       + "<td>{0}</td>"
+                       + "<td>{1}</td>"
+                       + "<td>{2}</td>"
+                       + "<td>{3} / {4}</td>"
+                       + "<td>{5} / {6}</td>"
+                       + "<td>{7} / {8}</td>"
+                       + "</tr>\n",
+                totalSummary.TemplateCode, 
+                ToString(totalSummary.Priority),
+                ToString(totalSummary.Distribution),
+                totalMessages, scheduledMessages,
+                totalPriorityMessages, scheduledPriority,
+                totalNonPriorityMessages, scheduledNonPriority);
+        }
+        writer.Write("</tbody>");
+        writer.Write("</table>");
     }
+
+    private static (int MessagesCount, string Priority, string Scheduled) ExtractData(TemplateGroupSummary summary)
+    {
+        if (summary.PriorityMessagesCount is {} priorityMessagesCount)
+        {
+            return ( summary.TotalMessagesCount, priorityMessagesCount.ToString(),
+                     ( summary.TotalMessagesCount - priorityMessagesCount ).ToString() );
+        }
+
+        return ( summary.TotalMessagesCount, "", "" );
+    }
+    
+
+    private static string ToString(Priority priority) => 
+        priority switch
+        {
+            Priority.Realtime => "RT",
+            Priority.High     => "H",
+            Priority.Normal   => "N",
+            Priority.Low      => "L",
+            _ => throw new ArgumentOutOfRangeException(
+                     nameof(priority), priority, null)
+        };
+
+    private static string ToString(TemplateDistribution distribution) => 
+        distribution switch
+        {
+            TemplateDistribution.Daytime => "Дневное",
+            TemplateDistribution.Evening => "Вечернее",
+            TemplateDistribution.Morning => "Утреннее",
+            TemplateDistribution.Uniform =>
+                "Равномерное",
+            _ => throw new ArgumentOutOfRangeException(nameof(distribution), distribution, null)
+        };
+
 }
 
 internal static class StreamWriterExtensions
 {
     public static ParagraphWriterDisposable BeginParagraph(this StreamWriter writer)
     {
-        writer.Write("<p>");
+        writer.Write("<p>\n");
         return new ParagraphWriterDisposable(writer);
     }
 }
@@ -106,6 +185,6 @@ internal struct ParagraphWriterDisposable : IDisposable
 
     public void Dispose()
     {
-        _writer?.Write("</p>");
+        _writer?.Write("\n</p>\n");
     }
 }
