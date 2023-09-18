@@ -12,6 +12,6 @@ public class LocalTimeReceiveTimeCalculator: IReceiveTimeCalculator
     }
     public DateTime CalculateReceiveTime(Message message)
     {
-        return _currentTime - message.ClientTimezoneOffset;
+        return _currentTime - TimeSpan.FromHours( message.ClientTimezoneOffset );
     }
 }

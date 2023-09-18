@@ -86,7 +86,7 @@ public class HtmlStatisticsSaver
     }
 }
 
-file static class StreamWriterExtensions
+internal static class StreamWriterExtensions
 {
     public static ParagraphWriterDisposable BeginParagraph(this StreamWriter writer)
     {
@@ -95,7 +95,7 @@ file static class StreamWriterExtensions
     }
 }
 
-file struct ParagraphWriterDisposable : IDisposable
+internal struct ParagraphWriterDisposable : IDisposable
 {
     private readonly StreamWriter _writer;
 

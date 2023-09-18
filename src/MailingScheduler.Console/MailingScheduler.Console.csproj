@@ -5,13 +5,13 @@
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <LangVersion>11</LangVersion>
         <DockerDefaultTargetOS>Linux</DockerDefaultTargetOS>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\MailingScheduler.Core\MailingScheduler.Core.csproj" />
       <ProjectReference Include="..\MailingScheduler.Database\MailingScheduler.Database.csproj" />
+      <ProjectReference Include="..\MailingScheduler.Generator\MailingScheduler.Generator.csproj" />
       <ProjectReference Include="..\MailingScheduler.PlanningStrategy\MailingScheduler.PlanningStrategy.csproj" />
       <ProjectReference Include="..\MailingScheduler.Statistics\MailingScheduler.Statistics.csproj" />
     </ItemGroup>

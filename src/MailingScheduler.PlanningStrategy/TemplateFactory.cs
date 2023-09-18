@@ -61,7 +61,7 @@ public class TemplateFactory
     }
     private PrioritizedPlanningStrategy CreatePrioritizedPlanningStrategy(TemplateInfo info)
     {
-        var templateMaxMessages = info.CalculateMaxMessagesForInterval(_intervalMinutes);
+        var templateMaxMessages = CalculateMaxMessagesForInterval(info, _intervalMinutes);
         
         var priorityMax = Math.Max(Math.Min(templateMaxMessages, _priorityOriginalMax), 1);
         var nonPriorityMax = Math.Max(Math.Min(templateMaxMessages, _nonPriorityOriginalMax), 1);
@@ -82,7 +82,7 @@ public class TemplateFactory
     
     private UniformPlanningStrategy CreateUniformPlanningStrategy(TemplateInfo info)
     {
-        var messagesMax = Math.Max(Math.Min(info.CalculateMaxMessagesForInterval(_intervalMinutes), _uniformOriginalMax), 1);
+        var messagesMax = Math.Max(Math.Min(CalculateMaxMessagesForInterval(info, _intervalMinutes), _uniformOriginalMax), 1);
         return new UniformPlanningStrategy(messagesMax);
     }
 
@@ -111,11 +111,8 @@ public class TemplateFactory
         
         return new TemplateFactory(nonPriorityOriginalMax, priorityOriginalMax, uniformOriginalMax, intervalMinutes, calculator);
     }
-}
-
-file static class TemplateInfoExtensions
-{
-    public static int CalculateMaxMessagesForInterval(this TemplateInfo templateInfo, int intervalMinutes)
+    
+    private static int CalculateMaxMessagesForInterval(TemplateInfo templateInfo, int intervalMinutes)
     {
         return templateInfo.MaxSendSpeed * intervalMinutes;
     }

@@ -8,6 +8,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\MailingScheduler.Core\MailingScheduler.Core.csproj" />
+      <ProjectReference Include="..\MailingScheduler.PlanningStrategy\MailingScheduler.PlanningStrategy.csproj" />
     </ItemGroup>
 
 </Project>
